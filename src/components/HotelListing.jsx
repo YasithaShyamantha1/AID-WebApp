@@ -97,6 +97,7 @@ export default function HotelListings() {
   ]
 
   const locations = ["ALL", "France", "Italy", "Australia", "Japan"]
+  
 
   const [selectedLocation, setSelectedLocation] = useState("ALL");
 
@@ -123,7 +124,7 @@ export default function HotelListings() {
       <div className="flex items-center gap-x-4">
         {
           locations.map((location) => {
-            return (<LocationTab selectedLocation={selectedLocation} name={location} onClick={handleSelectedLocation} />)
+            return (<LocationTab  key={location} selectedLocation={selectedLocation} name={location} onClick={handleSelectedLocation} />)
           })
         }
       </div>

@@ -7,15 +7,7 @@ function HotelCard(props) {
     // const [num, setNum] = useState(1);
 
     const handleClick = (e) => {
-        // batching      
-
-        // setNum(num + 1);
-        // setNum(num + 1);
-        // setNum(num + 1);  
-
-        // setNum(num => num + 1);
-        // setNum(num => num + 1);
-        // setNum(num => num + 1);  
+      
     }
 
     return (
