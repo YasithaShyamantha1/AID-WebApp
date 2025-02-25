@@ -18,8 +18,11 @@ function Navigation(p) {
           <Link to={`/`} className="transition-colors">
             Home
           </Link>
-          <Link to={`/hotels/4567`} className="transition-colors">
+          <Link to={`/hotels/:id`} className="transition-colors">
             Hotel
+          </Link>
+          <Link to={`/hotels/create`} className="transition-colors">
+            Create Hotel
           </Link>
         </div>
       </div>
