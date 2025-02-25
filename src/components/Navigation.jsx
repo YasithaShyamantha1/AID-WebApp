@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 import { Link } from "react-router";
+import { useSelector } from "react-redux";
+
 
 function Navigation(p) {
+
+  const user= useSelector((state) => state.user );
 
   return (
     <nav className="z-10 bg-black flex  items-center justify-between px-8 text-white py-4">

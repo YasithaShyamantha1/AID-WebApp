@@ -7,9 +7,12 @@ import HomePage from './pages/HomePage';
 import HotelPage from './pages/HotelPage';
 import RootLayout from './layouts/rootLayout';
 import MainLayout from "./layouts/mainlayout";
+import { store } from "./lib/store";
+import { Provider } from "react-redux";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <Provider store={store}>
     <BrowserRouter>
     <Routes>
     <Route  element ={<RootLayout/>}/>
@@ -21,5 +24,6 @@ createRoot(document.getElementById('root')).render(
    
     
     </BrowserRouter>
+    </Provider>
   </StrictMode>
 )
