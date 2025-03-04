@@ -1,15 +1,18 @@
 import { useCreateHotelMutation } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Input } from "@/components/ui/input"; // Ensure Input is used
 
 export default function CreateHotelPage() {
   const [createHotel, { isLoading }] = useCreateHotelMutation();
+  const [name, setName] = useState("");
 
   const handleClick = async () => {
     try {
       toast.loading("Creating hotel...");
       await createHotel({
-        name: "Opulent River Face Hotel",
+        name,
         location: "Kotte, Sri Lanka",
         reviews: 100,
         rating: 4,
@@ -28,9 +31,22 @@ export default function CreateHotelPage() {
   return (
     <main className="container mx-auto px-4 py-8 min-h-screen">
       <h1 className="text-2xl font-bold">Create a Hotel</h1>
+      <form>
+        <div>
+          <label htmlFor="name">Name</label>
+          <Input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      </form>
 
       <div className="mt-4">
-        <Button onClick={handleClick}>Create Hotel</Button>
+        <Button onClick={handleClick} disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Hotel"}
+        </Button>
       </div>
     </main>
   );
