@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 import { Link } from "react-router";
 import { useSelector } from "react-redux";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
 
 function Navigation(p) {
@@ -32,12 +33,17 @@ function Navigation(p) {
           <Globe className="h-5 w-5 mr-2" />
           EN
         </Button>
+        <SignedOut>
         <Button variant="ghost" asChild>
           <Link to="/sign-in">Log In</Link>
         </Button>
         <Button asChild>
           <Link to="/sign-up">Sign Up</Link>
         </Button>
+        </SignedOut>
+        <SignedIn>
+          <UserButton/>
+        </SignedIn>
         <div>
           {/* <p>{p.name}</p> */}
         </div>
