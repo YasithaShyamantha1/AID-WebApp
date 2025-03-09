@@ -28,7 +28,7 @@ function HotelCard(props) {
           <Star className="h-4 w-4 fill-primary text-primary" />
           <span className="font-medium">{props.hotel.rating}</span>
           <span className="text-muted-foreground">
-            ({props.hotel.reviews.toLocaleString()} Reviews)
+          ({props.hotel.reviews?.toLocaleString() ?? "No"} Reviews)
           </span>
         </div>
         <div className="flex items-baseline space-x-2">

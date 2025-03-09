@@ -12,18 +12,32 @@ const formSchema = z.object({
   name: z.string().min(1, { message: "Hotel name is required" }),
   location: z.string().min(1),
   image: z.string().min(1),
-  price: z.number(),
+  price: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number().positive({ message: "Price must be a positive number" })
+  ),
   description: z.string().min(1),
 });
+
 
 const CreateHotelForm = () => {
   const [createHotel, { isLoading }] = useCreateHotelMutation();
   const form = useForm({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      location: "",
+      image: "",
+      price: 0, 
+      description: "",
+    },
   });
 
   const handleSubmit = async (values) => {
     const { name, location, image, price, description } = values;
+    
+    console.log("Submitting Hotel Data:", { name, location, image, price, description });
+  
     try {
       toast.loading("Creating hotel...");
       await createHotel({
@@ -35,10 +49,11 @@ const CreateHotelForm = () => {
       }).unwrap();
       toast.success("Hotel created successfully");
     } catch (error) {
+      console.error("Hotel creation failed:", error);
       toast.error("Hotel creation failed");
     }
   };
-
+  
   return (
     <Form {...form}>
       <form className="w-1/2" onSubmit={form.handleSubmit(handleSubmit)}>
@@ -82,26 +97,28 @@ const CreateHotelForm = () => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Price"
-                    onChange={(e) => {
-                      field.onChange(parseFloat(e.target.value));
-                    }}
-                    value={field.value}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+         <FormField
+  control={form.control}
+  name="price"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Price</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          placeholder="Price"
+          onChange={(e) => {
+            const value = e.target.value.trim();
+            field.onChange(value === "" ? "" : parseFloat(value));
+          }}
+          value={field.value ?? ""}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
           <FormField
             control={form.control}
             name="description"
