@@ -3,11 +3,14 @@ import { Globe } from "lucide-react";
 import { Link } from "react-router";
 import { useSelector } from "react-redux";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+
 
 
 function Navigation(p) {
-
-  const user= useSelector((state) => state.user );
+  const { user } = useUser();
+  
+  
 
   return (
     <nav className="z-10 bg-black flex  items-center justify-between px-8 text-white py-4">
@@ -19,12 +22,12 @@ function Navigation(p) {
           <Link to={`/`} className="transition-colors">
             Home
           </Link>
-          <Link to={`/hotels/:id`} className="transition-colors">
+          {/* <Link to={`/hotels/:id`} className="transition-colors">
             Hotel
-          </Link>
-          <Link to={`/hotels/create`} className="transition-colors">
+          </Link> */}
+          {user?.publicMetadata?.role === "admin" && (<Link to={`/hotels/create`} className="transition-colors">
             Create Hotel
-          </Link>
+          </Link>)}
         </div>
       </div>
 

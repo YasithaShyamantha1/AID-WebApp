@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { useUser } from "@clerk/clerk-react";
 
 const BACKEND_URL = "http://localhost:8000";
 
@@ -7,6 +8,7 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${BACKEND_URL}/api/`,
     prepareHeaders: async (headers, { getState }) => {
+      
       const token = await window?.Clerk?.session?.getToken();
       console.log(token);
       if (token) {
