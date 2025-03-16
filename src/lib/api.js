@@ -42,7 +42,14 @@ export const api = createApi({
         body: hotel,
       }),
     }),
+    createBooking: builder.mutation({
+      query: (booking) => ({
+        url: "bookings",
+        method: "POST",
+        body: booking,
+      }),
+    }),
   }),
 });
 
-export const { useGetHotelsQuery, useGetHotelByIdQuery, useCreateHotelMutation } =api;
+export const { useGetHotelsQuery, useGetHotelByIdQuery, useCreateHotelMutation, useCreateBookingMutation } =api;

@@ -17,6 +17,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import AccountPage from './pages/AccountPage';
 import AdminProtectedLayout from './layouts/adminProtectedLayout';
 import ProtectedLayout from './layouts/protectedLayout';
+import CreateBookingPage from './pages/CreateBooking';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -39,6 +40,7 @@ createRoot(document.getElementById('root')).render(
     <Route path="/account" element={<AccountPage />} />
     <Route element={<AdminProtectedLayout />}> 
     <Route path="/hotels/create" element={<CreateHotelPage />} />
+    <Route path="/hotels/:id/booking" element={<CreateBookingPage/>} /> 
     </Route>  
     </Route>
     </Route>
