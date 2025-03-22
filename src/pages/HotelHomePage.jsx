@@ -1,18 +1,21 @@
-//import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCreateBookingMutation, useGetHotelByIdQuery } from "@/lib/api";
-import {Coffee,MapPin,MenuIcon as Restaurant, Star,Tv, Wifi} from "lucide-react";
-import { Link } from "react-router";
-import { useParams } from "react-router";
+import { Coffee, MapPin, MenuIcon as Restaurant, Star, Tv, Wifi } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import CreateBookingForm from "@/components/CreateBookingForm";
+import { motion } from "framer-motion";
 
 export default function HotelHomePage() {
   const { id } = useParams();
   const { data: hotel, isLoading, isError, error } = useGetHotelByIdQuery(id);
-  const [createBooking, {isLoading: isCreateBookingLoading}] = useCreateBookingMutation();
-  console.log("Hotel ID:", id);
+  const [createBooking, { isLoading: isCreateBookingLoading }] = useCreateBookingMutation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   const handleBook = async () => {
     try {
@@ -20,138 +23,107 @@ export default function HotelHomePage() {
         hotelId: id,
         checkIn: new Date(),
         checkOut: new Date(),
-        roomNumber: 200
-      })
+        roomNumber: 200,
+      });
     } catch (error) {
       console.log(error);
     }
-  }
-  if (isLoading)
+  };
+
+  if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 min-h-screen">
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <Skeleton className="w-full h-[400px] rounded-lg" />
-            <div className="flex space-x-2">
-              <Skeleton className="h-6 w-24" />
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-6 w-28" />
-            </div>
-          </div>
-          <div className="space-y-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <Skeleton className="h-8 w-64 mb-2" />
-                <Skeleton className="h-4 w-48" />
-              </div>
-              <Skeleton className="h-10 w-10 rounded-full" />
-            </div>
-            <Skeleton className="h-4 w-36" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-            <Card>
-              <CardContent className="p-4">
-                <Skeleton className="h-6 w-32 mb-4" />
-                <div className="grid grid-cols-2 gap-4">
-                  {[...Array(4)].map((_, index) => (
-                    <div key={index} className="flex items-center">
-                      <Skeleton className="h-5 w-5 mr-2" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <div className="flex items-center justify-between">
-              <div>
-                <Skeleton className="h-8 w-24 mb-1" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-              <Skeleton className="h-12 w-32" />
-            </div>
-          </div>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <Skeleton className="w-96 h-96 rounded-lg shadow-lg" />
       </div>
     );
+  }
 
-  if (isError) return <p className="text-red">Error: {isError.message}</p>;
+  if (isError) return <p className="text-red-500 text-center">Error: {error.message}</p>;
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen">
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div className="relative w-full h-[400px]">
-            <img
-              src={hotel.image}
-              alt={hotel.name}
-              className="absolute object-cover rounded-lg"
-            />
-          </div>
-          <div className="flex space-x-2">
-            {/* <Badge variant="secondary">Rooftop View</Badge>
-            <Badge variant="secondary">French Cuisine</Badge>
-            <Badge variant="secondary">City Center</Badge> */}
-          </div>
-        </div>
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      transition={{ duration: 0.5 }}
+      className="container mx-auto px-6 py-10"
+    >
+      <motion.div 
+        initial={{ scale: 0.9 }} 
+        animate={{ scale: 1 }} 
+        transition={{ duration: 0.5 }}
+        className="grid md:grid-cols-2 gap-10 items-start bg-white p-8 rounded-2xl shadow-lg"
+      >
+        <motion.div 
+          className="relative w-full h-[500px] rounded-2xl overflow-hidden shadow-md"
+          whileHover={{ scale: 1.02 }}
+        >
+          <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover" />
+        </motion.div>
+        
         <div className="space-y-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold">{hotel.name}</h1>
-              <div className="flex items-center mt-2">
-                <MapPin className="h-5 w-5 text-muted-foreground mr-1" />
-                <p className="text-muted-foreground">{hotel.location}</p>
-              </div>
-            </div>
-            <Button variant="outline" size="icon">
-              <Star className="h-4 w-4" />
-              <span className="sr-only">Add to favorites</span>
-            </Button>
+          <h1 className="text-4xl font-extrabold text-gray-900">{hotel.name}</h1>
+          <div className="flex items-center text-gray-600">
+            <MapPin className="h-6 w-6 text-primary mr-2" />
+            <span className="text-lg">{hotel.location}</span>
           </div>
-          <div className="flex items-center space-x-1">
-            <Star className="h-5 w-5 fill-primary text-primary" />
-            <span className="font-bold">{hotel.rating}</span>
-            <span className="text-muted-foreground">
-              ({hotel.reviews.toLocaleString()} reviews)
-            </span>
+          <div className="flex items-center space-x-2 text-yellow-500">
+            <Star className="h-6 w-6 fill-current" />
+            <span className="text-lg font-semibold">{hotel.rating}</span>
+            <span className="text-gray-500">({hotel.reviews.toLocaleString()} reviews)</span>
           </div>
-          <p className="text-muted-foreground">{hotel.description}</p>
-          <Card>
-            <CardContent className="p-4">
+          <p className="text-gray-700 text-lg leading-relaxed">{hotel.description}</p>
+          
+          <Card className="shadow-sm rounded-2xl">
+            <CardContent className="p-6 bg-gray-50 rounded-2xl">
               <h2 className="text-xl font-semibold mb-4">Amenities</h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center">
-                  <Wifi className="h-5 w-5 mr-2" />
-                  <span>Free Wi-Fi</span>
+                <div className="flex items-center text-gray-700 font-medium">
+                  <Wifi className="h-6 w-6 mr-2 text-primary" /> Free Wi-Fi
                 </div>
-                <div className="flex items-center">
-                  <Restaurant className="h-5 w-5 mr-2" />
-                  <span>Restaurant</span>
+                <div className="flex items-center text-gray-700 font-medium">
+                  <Restaurant className="h-6 w-6 mr-2 text-primary" /> Restaurant
                 </div>
-                <div className="flex items-center">
-                  <Tv className="h-5 w-5 mr-2" />
-                  <span>Flat-screen TV</span>
+                <div className="flex items-center text-gray-700 font-medium">
+                  <Tv className="h-6 w-6 mr-2 text-primary" /> Flat-screen TV
                 </div>
-                <div className="flex items-center">
-                  <Coffee className="h-5 w-5 mr-2" />
-                  <span>Coffee maker</span>
+                <div className="flex items-center text-gray-700 font-medium">
+                  <Coffee className="h-6 w-6 mr-2 text-primary" /> Coffee Maker
                 </div>
               </div>
             </CardContent>
           </Card>
-          <div className="flex items-center justify-between">
+
+          <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl shadow-sm">
             <div>
-              <p className="text-2xl font-bold">${hotel.price}</p>
-              <p className="text-sm text-muted-foreground">per night</p>
+              <p className="text-3xl font-bold text-primary">${hotel.price}</p>
+              <p className="text-md text-gray-500">per night</p>
             </div>
-            <Link to={`/hotels/${id}/booking`}>
-            <Button size="lg">Book Now</Button>
-            </Link>
+            <motion.button 
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }} 
+              onClick={openModal} 
+              className="bg-primary text-white px-6 py-3 rounded-2xl shadow-md hover:bg-primary-dark transition"
+            >
+              Book Now
+            </motion.button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+
+      {isModalOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          transition={{ duration: 0.3 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+        >
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-96">
+            <h3 className="text-xl font-bold mb-4">Create Booking</h3>
+            <CreateBookingForm />
+            <Button variant="outline" onClick={closeModal} className="mt-4 w-full rounded-2xl">Close</Button>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
   );
 }

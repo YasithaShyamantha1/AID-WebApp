@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { useUser } from "@clerk/clerk-react";
 
 const BACKEND_URL = "http://localhost:8000";
 
@@ -8,7 +7,6 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${BACKEND_URL}/api/`,
     prepareHeaders: async (headers, { getState }) => {
-      
       const token = await window?.Clerk?.session?.getToken();
       console.log(token);
       if (token) {
@@ -16,22 +14,10 @@ export const api = createApi({
       }
     }
   }),
-
   endpoints: (builder) => ({
     getHotels: builder.query({
       query: () => "hotels",
     }),
-    createHotel: builder.mutation({
-      query: (hotel) => ({
-        url: "hotels",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",  // Ensure JSON format
-        },
-        body: JSON.stringify(hotel), // Convert body to JSON string
-      }),
-    }),
-    
     getHotelById: builder.query({
       query: (id) => `hotels/${id}`,
     }),
@@ -52,4 +38,5 @@ export const api = createApi({
   }),
 });
 
-export const { useGetHotelsQuery, useGetHotelByIdQuery, useCreateHotelMutation, useCreateBookingMutation } =api;
+export const { useGetHotelsQuery, useGetHotelByIdQuery, useCreateHotelMutation, useCreateBookingMutation } =
+  api;

@@ -40,7 +40,7 @@ createRoot(document.getElementById('root')).render(
     <Route path="/account" element={<AccountPage />} />
     <Route element={<AdminProtectedLayout />}> 
     <Route path="/hotels/create" element={<CreateHotelPage />} />
-    <Route path="/hotels/:id/booking" element={<CreateBookingPage/>} /> 
+    <Route path="/hotels/:id/booking" element={<CreateBookingPage />} />
     </Route>  
     </Route>
     </Route>
