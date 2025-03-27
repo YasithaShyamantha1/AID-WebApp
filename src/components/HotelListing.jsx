@@ -1,27 +1,27 @@
-import { useGetHotelsQuery } from "@/lib/api";
+import { useGetHotelsForSearchQueryQuery } from "@/lib/api";
 import { useState } from "react";
 import HotelCard from "./HotelCard";
 import LocationTab from "./LocationTab";
+import { useSelector } from "react-redux";
 
 export default function HotelListings() {
-  const { data: hotels, isLoading, isError, error } = useGetHotelsQuery();
+  const searchValue = useSelector((state) => state.search.value);
+
+  const {
+    data: hotels, // Keep 'hotels' here
+    isLoading,
+    isError,
+    error,
+  } = useGetHotelsForSearchQueryQuery({
+    query: searchValue,
+  });
 
   const locations = ["ALL", "France", "Italy", "Australia", "Japan"];
-
   const [selectedLocation, setSelectedLocation] = useState("ALL");
 
   const handleSelectedLocation = (location) => {
     setSelectedLocation(location);
   };
-
-  const filteredHotels =
-    selectedLocation === "ALL"
-      ? hotels
-      : hotels.filter((hotel) => {
-          return hotel.location
-            .toLowerCase()
-            .includes(selectedLocation.toLowerCase());
-        });
 
   if (isLoading) {
     return (
@@ -36,16 +36,14 @@ export default function HotelListings() {
           </p>
         </div>
         <div className="flex items-center gap-x-4">
-          {locations.map((location, i) => {
-            return (
-              <LocationTab
-                key={i}
-                selectedLocation={selectedLocation}
-                name={location}
-                onClick={handleSelectedLocation}
-              />
-            );
-          })}
+          {locations.map((location, i) => (
+            <LocationTab
+              key={i}
+              selectedLocation={selectedLocation}
+              name={location}
+              onClick={handleSelectedLocation}
+            />
+          ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
           <p>Loading...</p>
@@ -67,24 +65,33 @@ export default function HotelListings() {
           </p>
         </div>
         <div className="flex items-center gap-x-4">
-          {locations.map((location, i) => {
-            return (
-              <LocationTab
-                key={i}
-                selectedLocation={selectedLocation}
-                name={location}
-                onClick={handleSelectedLocation}
-              />
-            );
-          })}
+          {locations.map((location, i) => (
+            <LocationTab
+              key={i}
+              selectedLocation={selectedLocation}
+              name={location}
+              onClick={handleSelectedLocation}
+            />
+          ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
-          <p className="text-red-500">{error}</p>
+          <p className="text-red-500">{error?.message || "Error fetching hotels."}</p>
         </div>
       </section>
     );
   }
 
+  
+  const hotelList = hotels?.map((hotel) => hotel.hotel) || [];
+
+  const filteredHotels =
+    selectedLocation === "ALL"
+      ? hotels
+      : hotels.filter(({ hotel }) => {
+          return hotel.location
+            .toLowerCase()
+            .includes(selectedLocation.toLowerCase());
+        });
   return (
     <section className="px-8 py-8 lg:py-16">
       <div className="mb-12">
@@ -97,20 +104,18 @@ export default function HotelListings() {
         </p>
       </div>
       <div className="flex items-center gap-x-4">
-        {locations.map((location, i) => {
-          return (
-            <LocationTab
-              key={i}
-              selectedLocation={selectedLocation}
-              name={location}
-              onClick={handleSelectedLocation}
-            />
-          );
-        })}
+        {locations.map((location, i) => (
+          <LocationTab
+            key={i}
+            selectedLocation={selectedLocation}
+            name={location}
+            onClick={handleSelectedLocation}
+          />
+        ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
-        {filteredHotels.map((hotel) => {
-          return <HotelCard key={hotel._id} hotel={hotel} />;
+      {filteredHotels.map(({hotel, confidence}) => {
+          return <HotelCard key={hotel._id} hotel={hotel} confidence={confidence} />;
         })}
       </div>
     </section>
