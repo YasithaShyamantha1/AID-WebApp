@@ -5,41 +5,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import { useAuth } from "@clerk/clerk-react"; // Import useAuth
+import { useAuth } from "@clerk/clerk-react";
 
 const BookingForm = ({ hotelId }) => {
-  
-  console.log("Hotel ID:", hotelId);
-  const { userId } = useAuth(); // Retrieve userId
+  const { userId } = useAuth();
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, reset } = useForm();
 
   const onSubmit = async (data) => {
-    console.log("Form Data:", data);
     if (!userId) {
       toast.error("User not authenticated");
       return;
     }
 
-    // Add hotelId and userId to the payload
-    data.hotelId = hotelId;
-    data.userId = userId;
+    console.log("hotelId:", hotelId); // Debugging line
 
-    // Convert dates to ISO strings
-    data.checkIn = new Date(data.checkIn);
-data.checkOut = new Date(data.checkOut);
-
-
-    // Ensure all required fields are present
+    if (!hotelId) {
+      toast.error("Hotel ID is missing!");
+      return;
+    }
+    // Prepare the payload matching the Booking model
     const payload = {
-      hotelId: data.hotelId,
-      userId: data.userId,
-      checkIn: data.checkIn,
-      checkOut: data.checkOut,
-      roomType: data.roomType,
-      adults: Number(data.adults),
-      children: Number(data.children) || 0,
-      specialRequests: data.specialRequests || "",
+      hotelId,
+      userId,
+      checkIn: new Date(data.checkIn),
+      checkOut: new Date(data.checkOut),
+      roomNumber: Number(data.roomNumber),
     };
 
     try {
@@ -52,7 +43,6 @@ data.checkOut = new Date(data.checkOut);
       });
 
       const result = await response.json();
-      console.log("API Response:", result); // Debugging
 
       if (!response.ok) {
         toast.error(result.error || "Failed to create booking");
@@ -73,59 +63,22 @@ data.checkOut = new Date(data.checkOut);
         <Button>Book Now</Button>
       </DialogTrigger>
       <DialogContent aria-describedby="dialog-description">
-  <p id="dialog-description">Your booking details go here...</p>
         <DialogTitle>Book Your Stay</DialogTitle>
-        <p className="text-sm text-gray-500 text-center mb-4">
-          Complete the form below to request a reservation
-        </p>
+        <p className="text-sm text-gray-500 text-center mb-4">Complete the form below to request a reservation</p>
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>First Name</Label>
-              <Input {...register("firstName")} required placeholder="First Name" />
-            </div>
-            <div>
-              <Label>Last Name</Label>
-              <Input {...register("lastName")} required placeholder="Last Name" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Email</Label>
-              <Input type="email" {...register("email")} required placeholder="Email" />
-            </div>
-            <div>
-              <Label>Phone</Label>
-              <Input type="tel" {...register("phone")} required placeholder="Phone" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Arrival Date</Label>
+              <Label>Check-in Date</Label>
               <Input type="date" {...register("checkIn")} required />
             </div>
             <div>
-              <Label>Departure Date</Label>
+              <Label>Check-out Date</Label>
               <Input type="date" {...register("checkOut")} required />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Room Type</Label>
-              <Input {...register("roomType")} required placeholder="Room Type" />
-            </div>
-            <div>
-              <Label>Adults</Label>
-              <Input type="number" {...register("adults")} required min="1" />
-            </div>
-            <div>
-              <Label>Children</Label>
-              <Input type="number" {...register("children")} min="0" />
-            </div>
-          </div>
           <div>
-            <Label>Special Requests</Label>
-            <Input {...register("specialRequests")} placeholder="Any special requests..." />
+            <Label>Room Number</Label>
+            <Input type="number" {...register("roomNumber")} required min="1" placeholder="Room Number" />
           </div>
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={() => reset()}>Close</Button>
