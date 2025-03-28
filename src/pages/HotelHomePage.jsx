@@ -7,13 +7,14 @@ import { Link, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import CreateBookingForm from "@/components/CreateBookingForm";
 import { motion } from "framer-motion";
+import { Toaster } from "../components/ui/sonner";
 
 export default function HotelHomePage() {
   const { id } = useParams();
   const { data: hotel, isLoading, isError, error } = useGetHotelByIdQuery(id);
   const [createBooking, { isLoading: isCreateBookingLoading }] = useCreateBookingMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
@@ -37,10 +38,11 @@ export default function HotelHomePage() {
       </div>
     );
   }
-
+ 
   if (isError) return <p className="text-red-500 text-center">Error: {error.message}</p>;
 
   return (
+    
     <motion.div 
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
@@ -72,8 +74,9 @@ export default function HotelHomePage() {
             <span className="text-gray-500">({hotel.reviews.toLocaleString()} reviews)</span>
           </div>
           <p className="text-gray-700 text-lg leading-relaxed">{hotel.description}</p>
-          
+          <Toaster />
           <Card className="shadow-sm rounded-2xl">
+            
             <CardContent className="p-6 bg-gray-50 rounded-2xl">
               <h2 className="text-xl font-semibold mb-4">Amenities</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -90,7 +93,9 @@ export default function HotelHomePage() {
                   <Coffee className="h-6 w-6 mr-2 text-primary" /> Coffee Maker
                 </div>
               </div>
+
             </CardContent>
+
           </Card>
 
           <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl shadow-sm">
@@ -119,7 +124,7 @@ export default function HotelHomePage() {
         >
           <div className="bg-white p-6 rounded-2xl shadow-xl w-96">
             <h3 className="text-xl font-bold mb-4">Create Booking</h3>
-            <CreateBookingForm />
+            <CreateBookingForm hotelId={id}/>
             <Button variant="outline" onClick={closeModal} className="mt-4 w-full rounded-2xl">Close</Button>
           </div>
         </motion.div>

@@ -7,11 +7,12 @@ export default function CreateBookingPage() {
   if (!hotelId) {
     return ;
   }
+  console.log("hotId", hotelId);
 
   return (
     <main className="container mx-auto px-4 py-8 min-h-screen">
       <h2 className="text-3xl md:text-4xl font-bold mb-4">Hotel Bookings</h2>
-      <CreateBookingForm hotelId={hotelId} /> {/* Pass hotelId to BookingForm */}
+      {/* <CreateBookingForm hotelId={hotelId} />  */}
     </main>
   );
 }
