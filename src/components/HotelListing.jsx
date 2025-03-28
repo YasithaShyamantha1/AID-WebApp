@@ -16,7 +16,7 @@ export default function HotelListings() {
     query: searchValue,
   });
 
-  const locations = ["ALL", "France", "Italy", "Australia", "Japan"];
+  const locations = ["ALL", "France", "Italy", "Australia", "Japan","India"];
   const [selectedLocation, setSelectedLocation] = useState("ALL");
 
   const handleSelectedLocation = (location) => {

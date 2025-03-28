@@ -124,7 +124,7 @@ export default function HotelHomePage() {
         >
           <div className="bg-white p-6 rounded-2xl shadow-xl w-96">
             <h3 className="text-xl font-bold mb-4">Create Booking</h3>
-            <CreateBookingForm hotelId={id}/>
+            <CreateBookingForm hotelId={id} perNightRate={hotel.price}/>
             <Button variant="outline" onClick={closeModal} className="mt-4 w-full rounded-2xl">Close</Button>
           </div>
         </motion.div>
