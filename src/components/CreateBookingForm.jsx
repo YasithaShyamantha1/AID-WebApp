@@ -306,7 +306,14 @@ const BookingForm = ({ hotelId }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Book Now</Button>
+      <Button
+  type="submit"
+  disabled={loading}
+  className="w-full py-2 rounded-2xl bg-black text-white text-base hover:bg-gray-800 transition duration-300"
+>
+  {loading ? "Creating booking..." : "Book Now"}
+</Button>
+
       </DialogTrigger>
       <DialogContent aria-describedby="dialog-description">
         <DialogTitle>Book Your Stay</DialogTitle>
