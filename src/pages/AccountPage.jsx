@@ -1,9 +1,9 @@
-import { SignedIn, useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { Navigate } from "react-router";
 import { useState, useEffect } from "react";
 
 const AccountPage = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isSignedIn, user } = useUser();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,9 +24,8 @@ const AccountPage = () => {
           }
 
           const data = await response.json();
-          console.log("API Response:", data); // Debugging API response
+          console.log("API Response:", data);
 
-          // Ensure the response is an array
           if (Array.isArray(data)) {
             setBookings(data);
           } else if (data && Array.isArray(data.data)) {
@@ -51,46 +50,44 @@ const AccountPage = () => {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 min-h-screen">
-      <h1 className="text-3xl md:text-4xl font-bold">My Account</h1>
-
-      {/* Personal Information Section */}
-      <div className="mt-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4">Personal Information</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <p className="text-muted-foreground">Name: {user?.fullName}</p>
+    <main className="container mx-auto px-6 py-10 min-h-screen bg-gray-100">
+      {/* User Info Section */}
+      <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <h1 className="text-4xl font-bold text-gray-800">My Account</h1>
+        <div className="mt-6 grid md:grid-cols-2 gap-6">
+          <div className="p-4 bg-gray-50 rounded-lg shadow-md">
+            <p className="text-lg font-semibold text-gray-700">Name</p>
+            <p className="text-gray-600">{user?.fullName}</p>
           </div>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Email: {user?.emailAddresses[0]?.emailAddress}
-            </p>
+          <div className="p-4 bg-gray-50 rounded-lg shadow-md">
+            <p className="text-lg font-semibold text-gray-700">Email</p>
+            <p className="text-gray-600">{user?.emailAddresses[0]?.emailAddress}</p>
           </div>
         </div>
       </div>
 
       {/* Booking History Section */}
-      <div className="mt-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4">My Bookings</h2>
+      <div className="bg-white shadow-lg rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">My Bookings</h2>
 
         {loading ? (
-          <p>Loading bookings...</p>
+          <p className="text-gray-600">Loading bookings...</p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : bookings.length === 0 ? (
-          <p>No bookings found.</p>
+          <p className="text-gray-600">No bookings found.</p>
         ) : (
-          <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-6">
             {bookings.map((booking) => (
-              <div key={booking._id} className="border rounded-xl p-4 shadow-md">
-                <p className="font-semibold">Hotel: {booking.hotelName}</p>
-                <p>Check-in: {new Date(booking.checkIn).toLocaleDateString()}</p>
-                <p>Check-out: {new Date(booking.checkOut).toLocaleDateString()}</p>
-                <p>Room Number: {booking.roomNumber}</p>
-                <p>Total Price: ${booking.totalPrice}</p>
-                <div className="flex space-x-4 mt-2">
-                  <button className="text-blue-600">Edit</button>
-                  <button className="text-red-600">Cancel</button>
+              <div key={booking._id} className="border bg-gray-50 rounded-lg p-6 shadow-md transition-transform transform hover:scale-105">
+                <h3 className="text-lg font-semibold text-gray-800">{booking.hotelName}</h3>
+                <p className="text-gray-600">Check-in: <span className="font-medium">{new Date(booking.checkIn).toLocaleDateString()}</span></p>
+                <p className="text-gray-600">Check-out: <span className="font-medium">{new Date(booking.checkOut).toLocaleDateString()}</span></p>
+                <p className="text-gray-600">Room Number: <span className="font-medium">{booking.roomNumber}</span></p>
+                <p className="text-gray-600">Total Price: <span className="font-semibold text-green-600">${booking.totalPrice}</span></p>
+                <div className="flex space-x-4 mt-4">
+                  <button className="px-4 py-2 bg-gray-600 text-white rounded-xl shadow-md hover:bg-blue-700 transition">Edit</button>
+                  <button className="px-4 py-2 bg-blue-900 text-white rounded-xl shadow-md hover:bg-red-700 transition">Cancel</button>
                 </div>
               </div>
             ))}

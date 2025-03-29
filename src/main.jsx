@@ -18,6 +18,7 @@ import AccountPage from './pages/AccountPage';
 import AdminProtectedLayout from './layouts/adminProtectedLayout';
 import ProtectedLayout from './layouts/protectedLayout';
 import CreateBookingPage from './pages/CreateBooking';
+import ChatWindow from './components/chatWindow';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -33,6 +34,7 @@ createRoot(document.getElementById('root')).render(
     <Routes>
     <Route  element ={<RootLayout/>}/>
     <Route element={<MainLayout />}>
+    <Route path="/chat" element={<ChatWindow />} /> 
     <Route path="/" element ={<HomePage/>}/>
     <Route path="/hotels" element ={<HotelPage/>}/>
     <Route path="/hotels/:id" element ={<HotelHomePage/>}/>
