@@ -1,11 +1,13 @@
 import Hero from "@/components/Hero";
 import HotelListings from "@/components/HotelListing";
+import { ChatPopup } from "@/components/chatWindow";
 
 const HomePage = () => {
   return (
     <main>
       <div className="relative min-h-screen">
         <Hero />
+        <ChatPopup/>
         <img
           src="/Assets/hero_1.jpg"
           alt=""

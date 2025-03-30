@@ -27,10 +27,6 @@ function Navigation() {
           )}
         </div>
 
-        <div className="hidden md:flex items-center space-x-6">
-          <Link to="/chat" className="text-white hover:text-gray-400">Chat</Link>
-        </div>
-
      
         <div className="hidden md:flex items-center space-x-4">
           <Button variant="ghost" className="text-white">

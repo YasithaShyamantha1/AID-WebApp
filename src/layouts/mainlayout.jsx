@@ -5,6 +5,7 @@ export default function MainLayout() {
   return (
     <>
       <Navigation name="Yasitha" />
+      
       <Outlet />
     </>
   );

@@ -90,3 +90,5 @@ export default function ChatPopup() {
     </div>
   );
 }
+
+export { ChatPopup };
