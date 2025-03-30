@@ -10,11 +10,12 @@ import {
   clearSuggestions,
 } from '../lib/features/chatSlice';
 import { useChat } from '../hooks/useChat';
-import { Sparkles, User, MessageCircle } from 'lucide-react';
+import { Sparkles, User, Bot } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import HotelSuggestionCard from './HotelSuggestionCard';
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { motion } from 'framer-motion';
 
 export default function ChatPopup() {
   const [open, setOpen] = useState(false);
@@ -28,6 +29,7 @@ export default function ChatPopup() {
   const { sendChatMessage } = useChat();
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
+  const [highlight, setHighlight] = useState(true);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,13 +43,23 @@ export default function ChatPopup() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, suggestedHotels]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setHighlight(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 rounded-full p-3 shadow-lg">
-            <MessageCircle className="w-6 h-6 text-white" />
-          </Button>
+          <motion.div
+            animate={{ opacity: [1, 0.5, 1], backgroundColor: ["#000", "#333", "#000"] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          >
+            <Button className="fixed bottom-6 right-6 bg-black hover:bg-gray-900 rounded-full p-8 shadow-lg">
+            <Bot className="w-12 h-12 text-white" />
+            </Button>
+          </motion.div>
         </DialogTrigger>
         <DialogContent className="w-full max-w-md p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <div className="flex flex-col h-[500px]">

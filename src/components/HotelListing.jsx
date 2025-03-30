@@ -85,26 +85,37 @@ export default function HotelListings() {
       </div>
 
       <div className="flex items-center gap-x-4 mb-8">
-        <span className="font-medium">Sort by price:</span>
-        <button
-          onClick={() => handlePriceSort("lowToHigh")}
-          className={`px-4 py-2 rounded-md ${priceSort === "lowToHigh" ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
-        >
-          Low to High
-        </button>
-        <button
-          onClick={() => handlePriceSort("highToLow")}
-          className={`px-4 py-2 rounded-md ${priceSort === "highToLow" ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
-        >
-          High to Low
-        </button>
-        <button
-          onClick={() => handlePriceSort("none")}
-          className={`px-4 py-2 rounded-md ${priceSort === "none" ? 'bg-black text-white' : 'bg-white text-gray-700'}`}
-        >
-          None
-        </button>
-      </div>
+  <span className="font-medium">Sort by price:</span>
+  <button
+    onClick={() => handlePriceSort("lowToHigh")}
+    className={`text-base border rounded-md px-4 py-2 cursor-pointer transition-all duration-300 
+      ${priceSort === "lowToHigh" ? "bg-black text-white" : "bg-white text-gray-700"} 
+      hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500 relative 
+      ${priceSort === "lowToHigh" ? "border-b-4 border-blue-500" : ""}`}
+  >
+    Low to High
+  </button>
+  <button
+    onClick={() => handlePriceSort("highToLow")}
+    className={`text-base border rounded-md px-4 py-2 cursor-pointer transition-all duration-300 
+      ${priceSort === "highToLow" ? "bg-black text-white" : "bg-white text-gray-700"} 
+      hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500 relative 
+      ${priceSort === "highToLow" ? "border-b-4 border-blue-500" : ""}`}
+  >
+    High to Low
+  </button>
+  <button
+    onClick={() => handlePriceSort("none")}
+    className={`text-base border rounded-md px-4 py-2 cursor-pointer transition-all duration-300 
+      ${priceSort === "none" ? "bg-black text-white" : "bg-white text-gray-700"} 
+      hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500 relative 
+      ${priceSort === "none" ? "border-b-4 border-blue-500" : ""}`}
+  >
+    None
+  </button>
+</div>
+
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-4">
         {filteredHotels.map(({ hotel, confidence }) => (
