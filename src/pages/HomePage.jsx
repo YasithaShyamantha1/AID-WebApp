@@ -9,7 +9,7 @@ const HomePage = () => {
         <Hero />
         <ChatPopup/>
         <img
-          src="/Assets/hero_1.jpg"
+          src="/Assets/new3.jpeg"
           alt=""
           className="absolute top-0 left-0 w-full h-full object-cover -z-10"
         />

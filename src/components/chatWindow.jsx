@@ -52,14 +52,15 @@ export default function ChatPopup() {
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <motion.div
-            animate={{ opacity: [1, 0.5, 1], backgroundColor: ["#000", "#333", "#000"] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            <Button className="fixed bottom-6 right-6 bg-black hover:bg-gray-900 rounded-full p-8 shadow-lg">
-            <Bot className="w-12 h-12 text-white" />
-            </Button>
-          </motion.div>
+        <motion.div
+  animate={{ opacity: [1, 0.5, 1], backgroundColor: ["#000", "#333", "#000"] }}
+  transition={{ duration: 1, repeat: Infinity }}
+>
+  <Button className="fixed bottom-6 right-6 bg-black hover:bg-gray-900 rounded-full p-8 shadow-lg border-4 border-white hover:border-blue-500">
+    <Bot className="w-8 h-8 text-white" />
+  </Button>
+</motion.div>
+
         </DialogTrigger>
         <DialogContent className="w-full max-w-md p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <div className="flex flex-col h-[500px]">
