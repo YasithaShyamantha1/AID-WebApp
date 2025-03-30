@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const BACKEND_URL = "https://aid-web-app-back-end-2.onrender.com";
+const BACKEND_URL = "https://aid-web-backend-new.onrender.com";
 
 export const api = createApi({
   reducerPath: "api",
