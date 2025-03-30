@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BookingForm = ({ hotelId, perNightRate }) => {
+const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
   const { userId, getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, reset, setValue, watch } = useForm();
@@ -32,46 +32,38 @@ const BookingForm = ({ hotelId, perNightRate }) => {
     }
   }, [isSignedIn, navigate]);
 
-  const calculateTotalAmount = (checkInDate, checkOutDate, perNightRate) => {
+  const calculateTotalAmount = (checkInDate, checkOutDate, rate) => {
+    if (!checkInDate || !checkOutDate) return 0;
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
     const differenceInTime = checkOut.getTime() - checkIn.getTime();
     const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-    
-    if (differenceInDays > 0) {
-      return differenceInDays * perNightRate;
-    } else {
-      return 0;
-    }
+    return differenceInDays * rate;
   };
 
   useEffect(() => {
     if (checkIn && checkOut) {
-      setTotalAmount(calculateTotalAmount(checkIn, checkOut, perNightRate));
+      const calculated = calculateTotalAmount(checkIn, checkOut, perNightRate);
+      setTotalAmount(calculated);
     }
   }, [checkIn, checkOut, perNightRate]);
 
   const onSubmit = async (data) => {
+    setLoading(true);
     const token = await getToken();
 
-    if (!userId) {
-      toast.error("User not authenticated");
-      return;
-    }
-    if (!hotelId) {
-      toast.error("Hotel ID is missing!");
-      return;
-    }
-
-    const payload = {
-      hotelId,
-      userId,
-      checkIn: new Date(data.checkIn),
-      checkOut: new Date(data.checkOut),
-      roomNumber: Number(data.roomNumber),
-    };
-
     try {
+      const payload = {
+        hotelId,
+        hotelName,
+        userId,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        roomNumber: Number(data.roomNumber),
+        totalAmount: calculateTotalAmount(data.checkIn, data.checkOut, perNightRate),
+        perNightRate
+      };
+
       const response = await fetch(`http://localhost:8000/api/booking`, {
         method: "POST",
         headers: {
@@ -80,40 +72,36 @@ const BookingForm = ({ hotelId, perNightRate }) => {
         },
         body: JSON.stringify(payload),
       });
+
       const result = await response.json();
+      
       if (!response.ok) {
-        toast.error(result.error || "Failed to create booking");
-        return;
+        throw new Error(result.error || "Failed to create booking");
       }
+
       toast.success("Booking created successfully");
       reset();
       setOpen(false);
     } catch (error) {
-      toast.error("Booking creation failed");
+      toast.error(error.message || "Booking creation failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 rounded-2xl bg-black text-white text-base hover:bg-gray-800 transition duration-300"
-        >
-          {loading ? "Creating booking..." : "Book Now"}
+        <Button className="w-full py-2 rounded-2xl bg-black text-white text-base hover:bg-gray-800 transition duration-300">
+          Book Now
         </Button>
       </DialogTrigger>
-      <DialogContent aria-describedby="dialog-description">
-        <DialogTitle>Book Your Stay</DialogTitle>
-        <p className="text-sm text-gray-500 text-center mb-4">
-          Complete the form below to request a reservation
-        </p>
+      <DialogContent>
+        <DialogTitle>Book Your Stay at {hotelName}</DialogTitle>
         
-        {/* Hotel Price Display */}
-        <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl shadow-sm">
+        <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl mb-4">
           <div>
-            <p className="text-3xl font-bold text-primary">${perNightRate}</p>
+            <p className="text-3xl font-bold">${perNightRate}</p>
             <p className="text-md text-gray-500">per night</p>
           </div>
         </div>
@@ -121,46 +109,51 @@ const BookingForm = ({ hotelId, perNightRate }) => {
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Check-in Date</Label>
+              <Label>Check-in</Label>
               <Input
                 type="date"
-                {...register("checkIn")}
-                required
-                onChange={(e) => setValue("checkIn", e.target.value)}
+                {...register("checkIn", { required: true })}
+                min={new Date().toISOString().split('T')[0]}
               />
             </div>
             <div>
-              <Label>Check-out Date</Label>
+              <Label>Check-out</Label>
               <Input
                 type="date"
-                {...register("checkOut")}
-                required
-                onChange={(e) => setValue("checkOut", e.target.value)}
+                {...register("checkOut", { required: true })}
+                min={checkIn || new Date().toISOString().split('T')[0]}
               />
             </div>
           </div>
+          
           <div>
             <Label>Room Number</Label>
             <Input
               type="number"
-              {...register("roomNumber")}
-              required
-              min="1"
-              placeholder="Room Number"
+              {...register("roomNumber", { required: true, min: 1 })}
+              placeholder="101"
             />
           </div>
 
-          
-          <div className="mt-4">
-            <p className="text-lg font-semibold">Total Amount: ${totalAmount.toFixed(2)}</p>
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <p className="text-lg font-semibold">Total: ${totalAmount.toFixed(2)}</p>
+            <p className="text-sm text-gray-500">
+              {checkIn && checkOut ? 
+                `${Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))} nights` : 
+                'Select dates to see total'}
+            </p>
           </div>
 
-          <div className="flex justify-between mt-4">
-            <Button type="button" variant="outline" onClick={() => reset()}>
-              Close
+          <div className="flex justify-end gap-2 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+            >
+              Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating booking..." : "Submit Booking Request"}
+              {loading ? "Processing..." : "Confirm Booking"}
             </Button>
           </div>
         </form>

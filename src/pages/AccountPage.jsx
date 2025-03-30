@@ -23,21 +23,22 @@ const AccountPage = () => {
             credentials: "include",
           });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch bookings");
-          }
+          if (!response.ok) throw new Error("Failed to fetch bookings");
 
           const data = await response.json();
-          
-          if (Array.isArray(data)) {
-            setBookings(data);
-          } else if (data && Array.isArray(data.data)) {
-            setBookings(data.data);
-          } else {
-            throw new Error("Invalid response format");
-          }
+          console.log("Bookings data:", data); // Debug log
+
+          // Process bookings to ensure they have all required fields
+          const processedBookings = (Array.isArray(data) ? data : data?.data || []).map(booking => ({
+            ...booking,
+            totalAmount: booking.totalAmount || 0,
+            perNightRate: booking.perNightRate || 0,
+            hotelName: booking.hotelName || "Unknown Hotel"
+          }));
+
+          setBookings(processedBookings);
         } catch (err) {
-          console.error("Error fetching bookings:", err);
+          console.error("Error:", err);
           setError(err.message);
         } finally {
           setLoading(false);
@@ -47,6 +48,11 @@ const AccountPage = () => {
       fetchBookings();
     }
   }, [isSignedIn, user]);
+
+  const calculateTotal = (checkIn, checkOut, rate) => {
+    const days = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+    return (days * rate).toFixed(2);
+  };
 
   const handleEditClick = (booking) => {
     setEditingBookingId(booking._id);
@@ -63,10 +69,7 @@ const AccountPage = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleUpdateBooking = async (bookingId) => {
@@ -74,53 +77,41 @@ const AccountPage = () => {
       const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}`, {
         method: "PUT",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editFormData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update booking");
-      }
+      if (!response.ok) throw new Error("Failed to update booking");
 
       const updatedBooking = await response.json();
-      setBookings(bookings.map(booking => 
-        booking._id === bookingId ? updatedBooking : booking
-      ));
+      setBookings(bookings.map(b => b._id === bookingId ? updatedBooking : b));
       setEditingBookingId(null);
     } catch (err) {
-      console.error("Error updating booking:", err);
+      console.error("Error:", err);
       setError(err.message);
     }
   };
 
   const handleCancelBooking = async (bookingId, e) => {
-    e.stopPropagation();
     e.preventDefault();
+    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
 
-    if (window.confirm("Are you sure you want to cancel this booking?")) {
-      try {
-        const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
+    try {
+      const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to cancel booking");
-        }
-
-        setBookings(bookings.filter(booking => booking._id !== bookingId));
-      } catch (err) {
-        console.error("Error canceling booking:", err);
-        setError(err.message);
-      }
+      if (!response.ok) throw new Error("Failed to cancel booking");
+      
+      setBookings(bookings.filter(b => b._id !== bookingId));
+    } catch (err) {
+      console.error("Error:", err);
+      setError(err.message);
     }
   };
 
-  if (!isSignedIn) {
-    return <Navigate to="/signin" />;
-  }
+  if (!isSignedIn) return <Navigate to="/signin" />;
 
   return (
     <main className="container mx-auto px-6 py-10 min-h-screen bg-gray-100">
@@ -152,10 +143,10 @@ const AccountPage = () => {
         ) : (
           <div className="grid md:grid-cols-2 gap-8">
             {bookings.map((booking) => (
-              <div key={booking._id} className="border border-gray-200 bg-white rounded-xl p-6 shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+              <div key={booking._id} className="border border-gray-200 bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-gray-900 font-serif">{booking.hotelName}</h3>
-                  <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Confirmed</span>
+                  <h3 className="text-xl font-bold text-gray-900">{booking.hotelName}</h3>
+                  <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Confirmed</span>
                 </div>
                 
                 {editingBookingId === booking._id ? (
@@ -167,7 +158,7 @@ const AccountPage = () => {
                         name="checkIn"
                         value={editFormData.checkIn}
                         onChange={handleEditChange}
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex flex-col">
@@ -177,7 +168,7 @@ const AccountPage = () => {
                         name="checkOut"
                         value={editFormData.checkOut}
                         onChange={handleEditChange}
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                       />
                     </div>
                     <div className="flex flex-col">
@@ -187,7 +178,7 @@ const AccountPage = () => {
                         name="roomNumber"
                         value={editFormData.roomNumber}
                         onChange={handleEditChange}
-                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -199,7 +190,9 @@ const AccountPage = () => {
                       </svg>
                       <p className="text-gray-700">
                         <span className="font-medium text-gray-600">Check-in:</span> 
-                        <span className="ml-2 font-semibold text-gray-900">{new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        <span className="ml-2 font-semibold text-gray-900">
+                          {new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
                       </p>
                     </div>
                     <div className="flex items-center">
@@ -208,7 +201,9 @@ const AccountPage = () => {
                       </svg>
                       <p className="text-gray-700">
                         <span className="font-medium text-gray-600">Check-out:</span> 
-                        <span className="ml-2 font-semibold text-gray-900">{new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        <span className="ml-2 font-semibold text-gray-900">
+                          {new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
                       </p>
                     </div>
                     <div className="flex items-center">
@@ -226,7 +221,11 @@ const AccountPage = () => {
                 <div className="flex justify-between items-center border-t border-gray-100 pt-4">
                   <div>
                     <p className="text-sm text-gray-500">Total Price</p>
-                    <p className="text-2xl font-bold text-green-600">${booking.totalPrice}</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      ${booking.totalAmount > 0 ? 
+                        booking.totalAmount.toFixed(2) : 
+                        calculateTotal(booking.checkIn, booking.checkOut, booking.perNightRate)}
+                    </p>
                   </div>
                   <div className="flex space-x-3">
                     {editingBookingId === booking._id ? (
