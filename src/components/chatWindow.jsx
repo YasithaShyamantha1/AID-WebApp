@@ -73,7 +73,7 @@ export default function ChatPopup() {
                 )}
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{user?.fullName || 'Traveler'}</h2>
-                  <p className="text-sm opacity-80 text-gray-600 dark:text-gray-300">AI Travel Assistant</p>
+                  <p className="text-sm opacity-80 text-gray-600 dark:text-gray-300">AI Assistant</p>
                 </div>
               </div>
             </div>

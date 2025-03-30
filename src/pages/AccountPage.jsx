@@ -7,6 +7,12 @@ const AccountPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingBookingId, setEditingBookingId] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    checkIn: "",
+    checkOut: "",
+    roomNumber: ""
+  });
 
   useEffect(() => {
     if (isSignedIn && user) {
@@ -17,15 +23,12 @@ const AccountPage = () => {
             credentials: "include",
           });
 
-          console.log("Fetching bookings for user ID:", user.id);
-
           if (!response.ok) {
             throw new Error("Failed to fetch bookings");
           }
 
           const data = await response.json();
-          console.log("API Response:", data);
-
+          
           if (Array.isArray(data)) {
             setBookings(data);
           } else if (data && Array.isArray(data.data)) {
@@ -44,6 +47,76 @@ const AccountPage = () => {
       fetchBookings();
     }
   }, [isSignedIn, user]);
+
+  const handleEditClick = (booking) => {
+    setEditingBookingId(booking._id);
+    setEditFormData({
+      checkIn: booking.checkIn.split('T')[0],
+      checkOut: booking.checkOut.split('T')[0],
+      roomNumber: booking.roomNumber
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBookingId(null);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleUpdateBooking = async (bookingId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update booking");
+      }
+
+      const updatedBooking = await response.json();
+      setBookings(bookings.map(booking => 
+        booking._id === bookingId ? updatedBooking : booking
+      ));
+      setEditingBookingId(null);
+    } catch (err) {
+      console.error("Error updating booking:", err);
+      setError(err.message);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId, e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (window.confirm("Are you sure you want to cancel this booking?")) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/bookings/${bookingId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to cancel booking");
+        }
+
+        setBookings(bookings.filter(booking => booking._id !== bookingId));
+      } catch (err) {
+        console.error("Error canceling booking:", err);
+        setError(err.message);
+      }
+    }
+  };
 
   if (!isSignedIn) {
     return <Navigate to="/signin" />;
@@ -77,17 +150,129 @@ const AccountPage = () => {
         ) : bookings.length === 0 ? (
           <p className="text-gray-600">No bookings found.</p>
         ) : (
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-8">
             {bookings.map((booking) => (
-              <div key={booking._id} className="border bg-gray-50 rounded-lg p-6 shadow-md transition-transform transform hover:scale-105">
-                <h3 className="text-lg font-semibold text-gray-800">{booking.hotelName}</h3>
-                <p className="text-gray-600">Check-in: <span className="font-medium">{new Date(booking.checkIn).toLocaleDateString()}</span></p>
-                <p className="text-gray-600">Check-out: <span className="font-medium">{new Date(booking.checkOut).toLocaleDateString()}</span></p>
-                <p className="text-gray-600">Room Number: <span className="font-medium">{booking.roomNumber}</span></p>
-                <p className="text-gray-600">Total Price: <span className="font-semibold text-green-600">${booking.totalPrice}</span></p>
-                <div className="flex space-x-4 mt-4">
-                  <button className="px-4 py-2 bg-gray-600 text-white rounded-xl shadow-md hover:bg-blue-700 transition">Edit</button>
-                  <button className="px-4 py-2 bg-blue-900 text-white rounded-xl shadow-md hover:bg-red-700 transition">Cancel</button>
+              <div key={booking._id} className="border border-gray-200 bg-white rounded-xl p-6 shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 font-serif">{booking.hotelName}</h3>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Confirmed</span>
+                </div>
+                
+                {editingBookingId === booking._id ? (
+                  <div className="space-y-3 mb-5">
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-600 mb-1">Check-in:</label>
+                      <input
+                        type="date"
+                        name="checkIn"
+                        value={editFormData.checkIn}
+                        onChange={handleEditChange}
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-600 mb-1">Check-out:</label>
+                      <input
+                        type="date"
+                        name="checkOut"
+                        value={editFormData.checkOut}
+                        onChange={handleEditChange}
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-600 mb-1">Room Number:</label>
+                      <input
+                        type="text"
+                        name="roomNumber"
+                        value={editFormData.roomNumber}
+                        onChange={handleEditChange}
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3 mb-5">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-gray-700">
+                        <span className="font-medium text-gray-600">Check-in:</span> 
+                        <span className="ml-2 font-semibold text-gray-900">{new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-gray-700">
+                        <span className="font-medium text-gray-600">Check-out:</span> 
+                        <span className="ml-2 font-semibold text-gray-900">{new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      <p className="text-gray-700">
+                        <span className="font-medium text-gray-600">Room:</span> 
+                        <span className="ml-2 font-semibold text-gray-900">{booking.roomNumber}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Total Price</p>
+                    <p className="text-2xl font-bold text-green-600">${booking.totalPrice}</p>
+                  </div>
+                  <div className="flex space-x-3">
+                    {editingBookingId === booking._id ? (
+                      <>
+                        <button 
+                          onClick={() => handleUpdateBooking(booking._id)}
+                          className="px-4 py-2 bg-gray-800 text-white rounded-full shadow-md hover:bg-black transition-all duration-300 flex items-center"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Save
+                        </button>
+                        <button 
+                          onClick={handleCancelEdit}
+                          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full shadow-md hover:bg-gray-300 transition-all duration-300 flex items-center"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button 
+                          onClick={() => handleEditClick(booking)}
+                          className="px-4 py-2 bg-gray-700 text-white rounded-full shadow-md hover:bg-gray-800 transition-all duration-300 flex items-center"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </button>
+                        <button 
+                          onClick={(e) => handleCancelBooking(booking._id, e)}
+                          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full shadow-md hover:bg-gray-300 transition-all duration-300 flex items-center"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

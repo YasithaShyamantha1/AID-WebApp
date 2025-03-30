@@ -150,7 +150,7 @@ const BookingForm = ({ hotelId, perNightRate }) => {
             />
           </div>
 
-          {/* Total Amount Calculation */}
+          
           <div className="mt-4">
             <p className="text-lg font-semibold">Total Amount: ${totalAmount.toFixed(2)}</p>
           </div>
