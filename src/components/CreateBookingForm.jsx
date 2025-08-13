@@ -33,11 +33,11 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
   }, [isSignedIn, navigate]);
 
   const calculateTotalAmount = (checkInDate, checkOutDate, rate) => {
-    if (!checkInDate || !checkOutDate) return 0;
+    if (!checkInDate || !checkOutDate || !rate) return 0;
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
     const differenceInTime = checkOut.getTime() - checkIn.getTime();
-    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+    const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24)); // Use Math.ceil for consistency
     return differenceInDays * rate;
   };
 
@@ -45,6 +45,8 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
     if (checkIn && checkOut) {
       const calculated = calculateTotalAmount(checkIn, checkOut, perNightRate);
       setTotalAmount(calculated);
+    } else {
+      setTotalAmount(0);
     }
   }, [checkIn, checkOut, perNightRate]);
 
@@ -61,10 +63,10 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
         checkOut: data.checkOut,
         roomNumber: Number(data.roomNumber),
         totalAmount: calculateTotalAmount(data.checkIn, data.checkOut, perNightRate),
-        perNightRate
+        perNightRate,
       };
 
-      const response = await fetch(`http://localhost:8000/api/booking`, {
+      const response = await fetch(`http://localhost:8000/api/bookings`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -74,7 +76,7 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || "Failed to create booking");
       }
@@ -82,6 +84,7 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
       toast.success("Booking created successfully");
       reset();
       setOpen(false);
+      navigate("/account"); // Redirect to Account Page after successful booking
     } catch (error) {
       toast.error(error.message || "Booking creation failed");
     } finally {
@@ -98,10 +101,10 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Book Your Stay at {hotelName}</DialogTitle>
-        
+
         <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl mb-4">
           <div>
-            <p className="text-3xl font-bold">${perNightRate}</p>
+            <p className="text-3xl font-bold">${perNightRate.toFixed(2)}</p>
             <p className="text-md text-gray-500">per night</p>
           </div>
         </div>
@@ -112,25 +115,30 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
               <Label>Check-in</Label>
               <Input
                 type="date"
-                {...register("checkIn", { required: true })}
-                min={new Date().toISOString().split('T')[0]}
+                {...register("checkIn", { required: "Check-in date is required" })}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setValue("checkIn", e.target.value)}
               />
             </div>
             <div>
               <Label>Check-out</Label>
               <Input
                 type="date"
-                {...register("checkOut", { required: true })}
-                min={checkIn || new Date().toISOString().split('T')[0]}
+                {...register("checkOut", { required: "Check-out date is required" })}
+                min={checkIn || new Date().toISOString().split("T")[0]}
+                onChange={(e) => setValue("checkOut", e.target.value)}
               />
             </div>
           </div>
-          
+
           <div>
             <Label>Room Number</Label>
             <Input
               type="number"
-              {...register("roomNumber", { required: true, min: 1 })}
+              {...register("roomNumber", {
+                required: "Room number is required",
+                min: { value: 1, message: "Room number must be positive" },
+              })}
               placeholder="101"
             />
           </div>
@@ -138,21 +146,19 @@ const BookingForm = ({ hotelId, perNightRate, hotelName }) => {
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-lg font-semibold">Total: ${totalAmount.toFixed(2)}</p>
             <p className="text-sm text-gray-500">
-              {checkIn && checkOut ? 
-                `${Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))} nights` : 
-                'Select dates to see total'}
+              {checkIn && checkOut
+                ? `${Math.ceil(
+                    (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)
+                  )} nights`
+                : "Select dates to see total"}
             </p>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !checkIn || !checkOut}>
               {loading ? "Processing..." : "Confirm Booking"}
             </Button>
           </div>
